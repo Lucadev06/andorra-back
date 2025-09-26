@@ -1,0 +1,22 @@
+[
+  {
+    "id": "1",
+    "nombre": "Juan",
+    "especialidad": "Cortes",
+    "servicios": ["Corte", "Barba"],
+    "disponibilidad": [
+      { "dia": "Lunes", "horarios": ["10:00", "11:00", "15:00"] },
+      { "dia": "Martes", "horarios": ["10:00", "12:00", "16:00"] }
+    ]
+  },
+  {
+    "id": "2",
+    "nombre": "Pedro",
+    "especialidad": "Color",
+    "servicios": ["Coloración"],
+    "disponibilidad": [
+      { "dia": "Miércoles", "horarios": ["10:00", "11:30", "15:30"] },
+      { "dia": "Jueves", "horarios": ["10:00", "12:00"] }
+    ]
+  }
+]
