@@ -5,8 +5,9 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    const peluqueros = await Peluquero.find({ activo: true }); // 👈 Filtra solo activos
-    console.log("📡 Peluqueros desde DB:", peluqueros);        // 👈 Agregar este log
+    const peluqueros = await Peluquero.find({ activo: true });
+    console.log("📡 Peluqueros encontrados:", peluqueros.length);
+    console.log("👀 Primer peluquero:", peluqueros[0]);
     res.set("Cache-Control", "no-store");
     res.json(peluqueros);
   } catch (error) {
@@ -14,5 +15,6 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 export default router;

@@ -21,8 +21,9 @@ app.use(express.json());
 // 👇 Conexión a Mongo
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ Conectado a MongoDB"))
+  .then(() => console.log("✅ Conectado a MongoDB:", process.env.MONGO_URI))
   .catch((err) => console.error("❌ Error de conexión:", err));
+
 
 app.use("/api/turnos", turnosRoutes);
 app.use("/api/peluqueros", peluquerosRoutes);
