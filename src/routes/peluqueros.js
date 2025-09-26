@@ -1,5 +1,5 @@
 import express from "express";
-import Peluquero from "../models/Peluquero.js";
+import Peluquero from "../models/Peluqueros.js";
 
 const router = express.Router();
 
