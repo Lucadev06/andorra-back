@@ -1,10 +1,16 @@
 import express from "express";
-import peluquerosData from "../data/peluqueros.json" assert { type: "json" };
+import Peluquero from "../models/Peluquero.js";
 
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  res.json(peluquerosData);
+// Obtener todos los peluqueros activos desde Atlas
+router.get("/", async (req, res) => {
+  try {
+    const peluqueros = await Peluquero.find({ activo: true });
+    res.json(peluqueros);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 export default router;
