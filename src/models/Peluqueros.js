@@ -1,0 +1,17 @@
+import mongoose from "mongoose";
+
+const PeluqueroSchema = new mongoose.Schema({
+  nombre: { type: String, required: true },
+  especialidad: { type: String, required: true },
+  servicios: [{ type: String, required: true }],
+  disponibilidad: [
+    {
+      dia: { type: String, required: true },
+      horarios: [{ type: String, required: true }],
+    },
+  ],
+  activo: { type: Boolean, default: true },
+});
+
+const Peluquero = mongoose.model("Peluquero", PeluqueroSchema);
+export default Peluquero;
