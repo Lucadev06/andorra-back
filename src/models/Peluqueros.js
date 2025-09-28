@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const PeluqueroSchema = new mongoose.Schema({
   nombre: { type: String, required: true },
   especialidad: { type: String, required: true },
-  servicios: [{ type: String, required: true }],
+  servicios: [{ type: mongoose.Schema.Types.ObjectId, ref: "Servicio" }],
   disponibilidad: [
     {
       dia: { type: String, required: true },

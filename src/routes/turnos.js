@@ -1,72 +1,59 @@
 import express from "express";
-import Turno from "../models/Turnos.js";
-import Peluquero from "../models/Peluqueros.js";
+import Turno from "../models/Turno.js";
 
 const router = express.Router();
 
-// Traer todos los turnos
+// 📌 GET: Obtener turnos (opcionalmente filtrado por fecha)
 router.get("/", async (req, res) => {
   try {
-    const turnos = await Turno.find().populate("peluquero");
-    res.json(turnos);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    const { fecha } = req.query;
+    const query = fecha ? { fecha: new Date(fecha) } : {};
+    const turnos = await Turno.find(query);
+    res.json({ data: turnos });
+  } catch (err) {
+    console.error("Error obteniendo turnos:", err);
+    res.status(500).json({ error: "Error obteniendo turnos" });
   }
 });
 
-// Crear turno
+// 📌 POST: Crear un nuevo turno
 router.post("/", async (req, res) => {
   try {
-    const { peluquero, fecha } = req.body;
+    const { peluquero, cliente, fecha, hora } = req.body;
 
-    const existe = await Turno.findOne({
-      peluquero,
-      fecha: new Date(fecha),
-    });
-
+    // Evitamos doble turno en mismo horario y peluquero
+    const existe = await Turno.findOne({ peluquero, fecha, hora });
     if (existe) {
-      return res.status(400).json({ error: "Ese horario ya está ocupado" });
+      return res.status(400).json({ error: "Ese turno ya está ocupado" });
     }
 
-    const nuevo = await Turno.create(req.body);
-    res.status(201).json(nuevo);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+    const nuevoTurno = await Turno.create({ peluquero, cliente, fecha, hora });
+    res.status(201).json({ data: nuevoTurno });
+  } catch (err) {
+    console.error("Error creando turno:", err);
+    res.status(500).json({ error: "Error creando turno" });
   }
 });
 
-// Consultar horarios disponibles
-router.get("/disponibles", async (req, res) => {
+// 📌 DELETE: Eliminar turno por ID
+router.delete("/:id", async (req, res) => {
   try {
-    const { peluqueroId, fecha } = req.query;
+    await Turno.findByIdAndDelete(req.params.id);
+    res.json({ message: "Turno eliminado" });
+  } catch (err) {
+    console.error("Error eliminando turno:", err);
+    res.status(500).json({ error: "Error eliminando turno" });
+  }
+});
 
-    const peluquero = await Peluquero.findById(peluqueroId);
-    if (!peluquero) return res.status(404).json({ error: "Peluquero no encontrado" });
-
-    const diaSemana = new Date(fecha).toLocaleDateString("es-AR", { weekday: "long" });
-    const disponibilidad = peluquero.disponibilidad.find(
-      (d) => d.dia.toLowerCase() === diaSemana.toLowerCase()
-    );
-
-    if (!disponibilidad) return res.json({ horariosDisponibles: [] });
-
-    const turnosOcupados = await Turno.find({
-      peluquero: peluqueroId,
-      fecha: {
-        $gte: new Date(new Date(fecha).setHours(0, 0, 0, 0)),
-        $lt: new Date(new Date(fecha).setHours(23, 59, 59, 999)),
-      },
-    });
-
-    const ocupados = turnosOcupados.map((t) =>
-      t.fecha.toISOString().slice(11, 16)
-    );
-
-    const libres = disponibilidad.horarios.filter((h) => !ocupados.includes(h));
-
-    res.json({ peluquero: peluquero.nombre, fecha, horariosDisponibles: libres });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+// 📌 PUT: Editar turno
+router.put("/:id", async (req, res) => {
+  try {
+    const turnoEditado = await Turno.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json({ data: turnoEditado });
+  } catch (err) {
+    console.error("Error editando turno:", err);
+    res.status(500).json({ error: "Error editando turno" });
   }
 });
 

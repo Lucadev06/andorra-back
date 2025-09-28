@@ -1,20 +1,18 @@
 import express from "express";
-import Peluquero from "../models/Peluqueros.js";
+import {
+  getPeluqueros,
+  getPeluqueroById,
+  createPeluquero,
+  updatePeluquero,
+  deletePeluquero,
+} from "../controllers/peluqueroController.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
-  try {
-    const peluqueros = await Peluquero.find({ activo: true });
-    console.log("📡 Peluqueros encontrados:", peluqueros.length);
-    console.log("👀 Primer peluquero:", peluqueros[0]);
-    res.set("Cache-Control", "no-store");
-    res.json(peluqueros);
-  } catch (error) {
-    console.error("❌ Error en /peluqueros:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
+router.get("/", getPeluqueros);
+router.get("/:id", getPeluqueroById);
+router.post("/", createPeluquero);
+router.put("/:id", updatePeluquero);
+router.delete("/:id", deletePeluquero);
 
 export default router;
