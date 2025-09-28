@@ -1,5 +1,5 @@
 import express from "express";
-import Turno from "../models/Turno.js";
+import Turno from "../models/Turnos.js";
 
 const router = express.Router();
 
