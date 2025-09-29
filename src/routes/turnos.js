@@ -15,6 +15,35 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: "Error obteniendo turnos" });
   }
 });
+// 📌 GET: Obtener horarios disponibles para un peluquero en una fecha
+router.get("/disponibles", async (req, res) => {
+  try {
+    const { peluqueroId, fecha } = req.query;
+
+    if (!peluqueroId || !fecha) {
+      return res.status(400).json({ error: "Faltan parámetros (peluqueroId y fecha)" });
+    }
+
+    // 1. Buscar turnos existentes en esa fecha para ese peluquero
+    const turnos = await Turno.find({ peluquero: peluqueroId, fecha });
+
+    // 2. Generar horarios (09:00 a 19:30)
+    const horarios = [];
+    for (let h = 9; h <= 19; h++) {
+      horarios.push(`${String(h).padStart(2, "0")}:00`);
+      horarios.push(`${String(h).padStart(2, "0")}:30`);
+    }
+
+    // 3. Filtrar los ocupados
+    const ocupados = turnos.map((t) => t.hora);
+    const disponibles = horarios.filter((h) => !ocupados.includes(h));
+
+    res.json({ data: disponibles });
+  } catch (err) {
+    console.error("Error obteniendo horarios disponibles:", err);
+    res.status(500).json({ error: "Error obteniendo horarios disponibles" });
+  }
+});
 
 // 📌 POST: Crear un nuevo turno
 router.post("/", async (req, res) => {
