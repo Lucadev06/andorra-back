@@ -4,17 +4,20 @@ import Turno from "../models/Turnos.js";
 const router = express.Router();
 
 // 📌 GET: Obtener turnos (opcionalmente filtrado por fecha)
+// 📌 GET: Obtener turnos (opcionalmente filtrado por fecha)
 router.get("/", async (req, res) => {
   try {
     const { fecha } = req.query;
-    const query = fecha ? { fecha: new Date(fecha) } : {};
-    const turnos = await Turno.find(query);
+    const query = fecha ? { fecha: { $regex: `^${fecha}` } } : {};
+    const turnos = await Turno.find(query).populate("peluquero"); // 👈 útil si peluquero es ref
     res.json({ data: turnos });
   } catch (err) {
     console.error("Error obteniendo turnos:", err);
     res.status(500).json({ error: "Error obteniendo turnos" });
   }
 });
+
+// 📌 GET: Obtener horarios disponibles para un peluquero en una fecha
 // 📌 GET: Obtener horarios disponibles para un peluquero en una fecha
 // 📌 GET: Obtener horarios disponibles para un peluquero en una fecha
 router.get("/disponibles", async (req, res) => {
@@ -22,35 +25,34 @@ router.get("/disponibles", async (req, res) => {
     const { peluqueroId, fecha } = req.query;
 
     if (!peluqueroId || !fecha) {
-      return res.status(400).json({ error: "Faltan parámetros (peluqueroId y fecha)" });
+      return res
+        .status(400)
+        .json({ error: "Faltan parámetros (peluqueroId y fecha)" });
     }
 
-    // Crear rango de inicio y fin del día
-    const start = new Date(fecha);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(fecha);
-    end.setHours(23, 59, 59, 999);
+    // Normalizamos fecha a solo día
+    const fechaISO = new Date(fecha).toISOString().split("T")[0];
 
-    // Buscar turnos de ese peluquero en esa fecha (por rango)
+    // Buscamos turnos del peluquero en esa fecha
     const turnos = await Turno.find({
       peluquero: peluqueroId,
-      fecha: { $gte: start, $lte: end }
+      fecha: { $regex: `^${fechaISO}` },
     });
 
-    // Generar horarios base
+    // Generamos horarios
     const horarios = [];
     for (let h = 9; h <= 19; h++) {
       horarios.push(`${String(h).padStart(2, "0")}:00`);
       horarios.push(`${String(h).padStart(2, "0")}:30`);
     }
 
-    // Filtrar ocupados (sin romper si falta hora)
-    const ocupados = turnos.map((t) => t.hora).filter(Boolean);
+    // Filtramos ocupados
+    const ocupados = turnos.map((t) => t.hora);
     const disponibles = horarios.filter((h) => !ocupados.includes(h));
 
     res.json({ data: disponibles });
   } catch (err) {
-    console.error("❌ Error obteniendo horarios disponibles:", err);
+    console.error("Error obteniendo horarios disponibles:", err);
     res.status(500).json({ error: "Error obteniendo horarios disponibles" });
   }
 });
