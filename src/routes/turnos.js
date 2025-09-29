@@ -55,22 +55,45 @@ router.get("/disponibles", async (req, res) => {
   }
 });
 
-// 📌 POST: Crear un nuevo turno
 router.post("/", async (req, res) => {
   try {
-    const { peluquero, cliente, fecha, hora } = req.body;
+    console.log("📥 Body recibido:", req.body); // 👈 LOG CLAVE
 
-    // Evitamos doble turno en mismo horario y peluquero
-    const existe = await Turno.findOne({ peluquero, fecha, hora });
+    const { peluquero, cliente, fecha, hora, servicio } = req.body;
+
+    if (!peluquero || !cliente || !fecha || !hora) {
+      console.warn("⚠️ Faltan datos:", { peluquero, cliente, fecha, hora });
+      return res.status(400).json({ error: "Faltan datos obligatorios" });
+    }
+
+    // Normalizamos fecha para evitar problemas de comparación
+    const fechaStr =
+      typeof fecha === "string" ? fecha : new Date(fecha).toISOString().split("T")[0];
+
+    console.log("🔎 Buscando turno en:", {
+      peluquero,
+      fecha: fechaStr,
+      hora,
+    });
+
+    const existe = await Turno.findOne({ peluquero, fecha: fechaStr, hora });
     if (existe) {
       return res.status(400).json({ error: "Ese turno ya está ocupado" });
     }
 
-    const nuevoTurno = await Turno.create({ peluquero, cliente, fecha, hora });
+    const nuevoTurno = await Turno.create({
+      peluquero,
+      cliente,
+      fecha: fechaStr,
+      hora,
+      servicio, // 👈 si lo tenés en el schema
+    });
+
+    console.log("✅ Turno creado:", nuevoTurno);
     res.status(201).json({ data: nuevoTurno });
   } catch (err) {
-    console.error("Error creando turno:", err);
-    res.status(500).json({ error: "Error creando turno" });
+    console.error("❌ Error creando turno:", err);
+    res.status(500).json({ error: err.message || "Error creando turno" });
   }
 });
 
