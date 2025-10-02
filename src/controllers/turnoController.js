@@ -22,26 +22,52 @@ export const getTurnoById = async (req, res) => {
 };
 
 export const createTurno = async (req, res) => {
-  const turno = new Turno({
-    cliente: req.body.cliente,
-    fecha: req.body.fecha,
-    servicio: req.body.servicio,
-    peluquero: req.body.peluquero,
-  });
+  const { cliente, fecha, hora, servicio, peluquero } = req.body;
 
   try {
+    const existingTurno = await Turno.findOne({ peluquero, fecha, hora });
+    if (existingTurno) {
+      return res.status(409).json({ message: "El turno ya está ocupado." });
+    }
+
+    const turno = new Turno({
+      cliente,
+      fecha,
+      hora,
+      servicio,
+      peluquero,
+    });
+
     const newTurno = await turno.save();
     res.status(201).json(newTurno);
   } catch (err) {
+    if (err.code === 11000) {
+      return res.status(409).json({ message: "El turno ya está ocupado." });
+    }
     res.status(400).json({ message: err.message });
   }
 };
 
 export const updateTurno = async (req, res) => {
+  const { id } = req.params;
+  const { cliente, fecha, hora, servicio, peluquero } = req.body;
+
   try {
-    const updatedTurno = await Turno.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const existingTurno = await Turno.findOne({ peluquero, fecha, hora, _id: { $ne: id } });
+    if (existingTurno) {
+      return res.status(409).json({ message: "El turno ya está ocupado." });
+    }
+
+    const updatedTurno = await Turno.findByIdAndUpdate(id, { cliente, fecha, hora, servicio, peluquero }, { new: true });
+    if (!updatedTurno) {
+      return res.status(404).json({ message: "Turno no encontrado." });
+    }
+
     res.json(updatedTurno);
   } catch (err) {
+    if (err.code === 11000) {
+      return res.status(409).json({ message: "El turno ya está ocupado." });
+    }
     res.status(400).json({ message: err.message });
   }
 };
