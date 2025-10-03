@@ -24,15 +24,17 @@ export const getTurnoById = async (req, res) => {
 export const createTurno = async (req, res) => {
   const { cliente, fecha, hora, servicio, peluquero } = req.body;
 
+  const fechaUTC = new Date(fecha);
+
   try {
-    const existingTurno = await Turno.findOne({ peluquero, fecha, hora });
+    const existingTurno = await Turno.findOne({ peluquero, fecha: fechaUTC, hora });
     if (existingTurno) {
       return res.status(409).json({ message: "El turno ya está ocupado." });
     }
 
     const turno = new Turno({
       cliente,
-      fecha,
+      fecha: fechaUTC,
       hora,
       servicio,
       peluquero,
@@ -52,13 +54,15 @@ export const updateTurno = async (req, res) => {
   const { id } = req.params;
   const { cliente, fecha, hora, servicio, peluquero } = req.body;
 
+  const fechaUTC = new Date(fecha);
+
   try {
-    const existingTurno = await Turno.findOne({ peluquero, fecha, hora, _id: { $ne: id } });
+    const existingTurno = await Turno.findOne({ peluquero, fecha: fechaUTC, hora, _id: { $ne: id } });
     if (existingTurno) {
       return res.status(409).json({ message: "El turno ya está ocupado." });
     }
 
-    const updatedTurno = await Turno.findByIdAndUpdate(id, { cliente, fecha, hora, servicio, peluquero }, { new: true });
+    const updatedTurno = await Turno.findByIdAndUpdate(id, { cliente, fecha: fechaUTC, hora, servicio, peluquero }, { new: true });
     if (!updatedTurno) {
       return res.status(404).json({ message: "Turno no encontrado." });
     }
