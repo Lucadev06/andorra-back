@@ -22,18 +22,24 @@ export const getTurnoById = async (req, res) => {
 };
 
 export const createTurno = async (req, res) => {
-  const { cliente, fecha, hora, servicio, peluquero } = req.body;
+  const { cliente, mail, fecha, hora, servicio, peluquero } = req.body;
 
   const fechaUTC = new Date(fecha);
 
   try {
-    const existingTurno = await Turno.findOne({ peluquero, fecha: fechaUTC, hora });
-    if (existingTurno) {
+    const existingTurnoPeluquero = await Turno.findOne({ peluquero, fecha: fechaUTC, hora });
+    if (existingTurnoPeluquero) {
       return res.status(409).json({ message: "El turno ya está ocupado." });
+    }
+
+    const existingTurnoMail = await Turno.findOne({ mail });
+    if (existingTurnoMail) {
+      return res.status(409).json({ message: "Ya tienes un turno registrado con este email." });
     }
 
     const turno = new Turno({
       cliente,
+      mail,
       fecha: fechaUTC,
       hora,
       servicio,
@@ -80,6 +86,15 @@ export const deleteTurno = async (req, res) => {
   try {
     await Turno.findByIdAndDelete(req.params.id);
     res.json({ message: "Deleted Turno" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const getTurnosByEmail = async (req, res) => {
+  try {
+    const turnos = await Turno.find({ mail: req.params.mail }).populate('peluquero').populate('cliente').populate('servicio');
+    res.json(turnos);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -57,14 +57,24 @@ router.get("/disponibles", async (req, res) => {
   }
 });
 
+router.get("/email/:mail", async (req, res) => {
+  try {
+    const turnos = await Turno.find({ mail: req.params.mail }).populate("peluquero");
+    res.json({ data: turnos });
+  } catch (err) {
+    console.error("Error obteniendo turnos por email:", err);
+    res.status(500).json({ error: "Error obteniendo turnos por email" });
+  }
+});
+
 router.post("/", async (req, res) => {
   try {
     console.log("📥 Body recibido:", req.body); // 👈 LOG CLAVE
 
-    const { peluquero, cliente, fecha, hora, servicio } = req.body;
+    const { peluquero, cliente, mail, fecha, hora, servicio } = req.body;
 
-    if (!peluquero || !cliente || !fecha || !hora) {
-      console.warn("⚠️ Faltan datos:", { peluquero, cliente, fecha, hora });
+    if (!peluquero || !cliente || !mail || !fecha || !hora) {
+      console.warn("⚠️ Faltan datos:", { peluquero, cliente, mail, fecha, hora });
       return res.status(400).json({ error: "Faltan datos obligatorios" });
     }
 
@@ -86,6 +96,7 @@ router.post("/", async (req, res) => {
     const nuevoTurno = await Turno.create({
       peluquero,
       cliente,
+      mail,
       fecha: fechaStr,
       hora,
       servicio, // 👈 si lo tenés en el schema
