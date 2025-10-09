@@ -54,3 +54,22 @@ export const deletePeluquero = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+export const addDiaLibre = async (req, res) => {
+  const { id } = req.params;
+  const { fecha } = req.body;
+
+  try {
+    const peluquero = await Peluquero.findById(id);
+    if (!peluquero) {
+      return res.status(404).json({ message: "Peluquero not found" });
+    }
+
+    peluquero.diasLibres.push(new Date(fecha));
+    await peluquero.save();
+
+    res.status(200).json(peluquero);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

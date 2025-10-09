@@ -11,6 +11,7 @@ const PeluqueroSchema = new mongoose.Schema({
     },
   ],
   activo: { type: Boolean, default: true },
+  diasLibres: [{ type: Date }],
 });
 
 const Peluquero = mongoose.model("Peluquero", PeluqueroSchema);

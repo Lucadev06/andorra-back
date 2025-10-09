@@ -5,6 +5,7 @@ import {
   createPeluquero,
   updatePeluquero,
   deletePeluquero,
+  addDiaLibre,
 } from "../controllers/peluqueroController.js";
 
 const router = express.Router();
@@ -14,5 +15,6 @@ router.get("/:id", getPeluqueroById);
 router.post("/", createPeluquero);
 router.put("/:id", updatePeluquero);
 router.delete("/:id", deletePeluquero);
+router.post("/:id/dias-libres", addDiaLibre);
 
 export default router;
