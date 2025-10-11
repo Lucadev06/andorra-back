@@ -74,10 +74,16 @@ export const addDiaLibre = async (req, res) => {
       peluquero.especialidad = "No especificada";
     }
 
-    if (peluquero.servicios && typeof peluquero.servicios[0] === 'string') {
-      const servicioNombres = peluquero.servicios.map(s => s.toString());
-      const servicios = await Servicio.find({ nombre: { $in: servicioNombres } });
-      peluquero.servicios = servicios.map(s => s._id);
+    if (peluquero.servicios && typeof peluquero.servicios[0] === 'string' && peluquero.servicios[0].startsWith('[')) {
+      try {
+        const servicioString = peluquero.servicios[0].replace(/'/g, '"');
+        const servicioNombres = JSON.parse(servicioString);
+        const servicios = await Servicio.find({ nombre: { $in: servicioNombres } });
+        peluquero.servicios = servicios.map(s => s._id);
+      } catch (e) {
+        console.error("Error parsing servicios string:", e);
+        peluquero.servicios = [];
+      }
     }
 
     peluquero.diasLibres.push(new Date(fecha + 'T00:00:00'));
