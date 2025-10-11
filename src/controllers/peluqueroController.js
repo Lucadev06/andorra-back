@@ -1,5 +1,5 @@
 import Peluquero from "../models/Peluqueros.js";
-import Servicio from "../models/Servicio.js";
+
 
 export const getPeluqueros = async (req, res) => {
   try {
@@ -70,24 +70,8 @@ export const addDiaLibre = async (req, res) => {
       return res.status(404).json({ message: "Peluquero not found" });
     }
 
-    if (!peluquero.especialidad) {
-      peluquero.especialidad = "No especificada";
-    }
-
-    if (peluquero.servicios && typeof peluquero.servicios[0] === 'string' && peluquero.servicios[0].startsWith('[')) {
-      try {
-        const servicioString = peluquero.servicios[0].replace(/'/g, '"');
-        const servicioNombres = JSON.parse(servicioString);
-        const servicios = await Servicio.find({ nombre: { $in: servicioNombres } });
-        peluquero.servicios = servicios.map(s => s._id);
-      } catch (e) {
-        console.error("Error parsing servicios string:", e);
-        peluquero.servicios = [];
-      }
-    }
-
     peluquero.diasLibres.push(new Date(fecha + 'T00:00:00'));
-    await peluquero.save();
+    await peluquero.save({ validateBeforeSave: false });
 
     res.status(200).json(peluquero);
   } catch (err) {
