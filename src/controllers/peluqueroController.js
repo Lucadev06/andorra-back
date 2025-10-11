@@ -1,4 +1,5 @@
 import Peluquero from "../models/Peluqueros.js";
+import Servicio from "../models/Servicio.js";
 
 export const getPeluqueros = async (req, res) => {
   try {
@@ -58,11 +59,25 @@ export const deletePeluquero = async (req, res) => {
 export const addDiaLibre = async (req, res) => {
   const { id } = req.params;
   const { fecha } = req.body;
+  console.log("id", id);
+  console.log("fecha", fecha);
+  console.log("id", id);
+  console.log("fecha", fecha);
 
   try {
     const peluquero = await Peluquero.findById(id);
     if (!peluquero) {
       return res.status(404).json({ message: "Peluquero not found" });
+    }
+
+    if (!peluquero.especialidad) {
+      peluquero.especialidad = "No especificada";
+    }
+
+    if (peluquero.servicios && typeof peluquero.servicios[0] === 'string') {
+      const servicioNombres = peluquero.servicios.map(s => s.toString());
+      const servicios = await Servicio.find({ nombre: { $in: servicioNombres } });
+      peluquero.servicios = servicios.map(s => s._id);
     }
 
     peluquero.diasLibres.push(new Date(fecha + 'T00:00:00'));
