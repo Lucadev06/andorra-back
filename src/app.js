@@ -5,8 +5,7 @@ import cors from "cors";
 
 import turnosRoutes from "./routes/turnos.js";
 import peluquerosRoutes from "./routes/peluqueros.js";
-import clienteRoutes from "./routes/clientes.js";
-import servicioRoutes from "./routes/servicios.js";
+
 
 dotenv.config();
 
@@ -29,7 +28,6 @@ mongoose
 
 app.use("/api/turnos", turnosRoutes);
 app.use("/api/peluqueros", peluquerosRoutes);
-app.use("/api/clientes", clienteRoutes);
-app.use("/api/servicios", servicioRoutes);
+
 
 export default app;
