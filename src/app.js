@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 
 import turnosRoutes from "./routes/turnos.js";
-import peluquerosRoutes from "./routes/peluqueros.js";
+import diasNoDisponiblesRoutes from "./routes/diasNoDisponibles.js";
 
 
 dotenv.config();
@@ -27,7 +27,7 @@ mongoose
 
 
 app.use("/api/turnos", turnosRoutes);
-app.use("/api/peluqueros", peluquerosRoutes);
+app.use("/api/dias-no-disponibles", diasNoDisponiblesRoutes);
 
 
 export default app;

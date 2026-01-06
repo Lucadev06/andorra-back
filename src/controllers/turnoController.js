@@ -2,7 +2,7 @@ import Turno from "../models/Turnos.js";
 
 export const getTurnos = async (req, res) => {
   try {
-    const turnos = await Turno.find().populate('peluquero').populate('cliente').populate('servicio');
+    const turnos = await Turno.find().populate('cliente').populate('servicio');
     res.json(turnos);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -11,7 +11,7 @@ export const getTurnos = async (req, res) => {
 
 export const getTurnoById = async (req, res) => {
   try {
-    const turno = await Turno.findById(req.params.id).populate('peluquero').populate('cliente').populate('servicio');
+    const turno = await Turno.findById(req.params.id).populate('cliente').populate('servicio');
     if (turno == null) {
       return res.status(404).json({ message: "Cannot find turno" });
     }
@@ -22,28 +22,17 @@ export const getTurnoById = async (req, res) => {
 };
 
 export const createTurno = async (req, res) => {
-  const { cliente, mail, fecha, hora, servicio, peluquero } = req.body;
+  const { cliente, mail, fecha, hora, servicio } = req.body;
 
   const fechaUTC = new Date(fecha);
 
   try {
-    const existingTurnoPeluquero = await Turno.findOne({ peluquero, fecha: fechaUTC, hora });
-    if (existingTurnoPeluquero) {
-      return res.status(409).json({ message: "El turno ya está ocupado." });
-    }
-
-    const existingTurnoMail = await Turno.findOne({ mail });
-    if (existingTurnoMail) {
-      return res.status(409).json({ message: "Ya tienes un turno registrado con este email." });
-    }
-
     const turno = new Turno({
       cliente,
       mail,
       fecha: fechaUTC,
       hora,
       servicio,
-      peluquero,
     });
 
     const newTurno = await turno.save();
@@ -58,17 +47,12 @@ export const createTurno = async (req, res) => {
 
 export const updateTurno = async (req, res) => {
   const { id } = req.params;
-  const { cliente, fecha, hora, servicio, peluquero } = req.body;
+  const { cliente, fecha, hora, servicio } = req.body;
 
   const fechaUTC = new Date(fecha);
 
   try {
-    const existingTurno = await Turno.findOne({ peluquero, fecha: fechaUTC, hora, _id: { $ne: id } });
-    if (existingTurno) {
-      return res.status(409).json({ message: "El turno ya está ocupado." });
-    }
-
-    const updatedTurno = await Turno.findByIdAndUpdate(id, { cliente, fecha: fechaUTC, hora, servicio, peluquero }, { new: true });
+    const updatedTurno = await Turno.findByIdAndUpdate(id, { cliente, fecha: fechaUTC, hora, servicio }, { new: true });
     if (!updatedTurno) {
       return res.status(404).json({ message: "Turno no encontrado." });
     }
@@ -93,7 +77,7 @@ export const deleteTurno = async (req, res) => {
 
 export const getTurnosByEmail = async (req, res) => {
   try {
-    const turnos = await Turno.find({ mail: req.params.mail }).populate('peluquero').populate('cliente').populate('servicio');
+    const turnos = await Turno.find({ mail: req.params.mail }).populate('cliente').populate('servicio');
     res.json(turnos);
   } catch (err) {
     res.status(500).json({ message: err.message });
