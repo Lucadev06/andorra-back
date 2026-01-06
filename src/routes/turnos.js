@@ -73,8 +73,8 @@ router.post("/", async (req, res) => {
 
     const { peluquero, cliente, mail, fecha, hora, servicio } = req.body;
 
-    if (!peluquero || !cliente || !mail || !fecha || !hora) {
-      console.warn("⚠️ Faltan datos:", { peluquero, cliente, mail, fecha, hora });
+    if (!cliente || !mail || !fecha || !hora) {
+      console.warn("⚠️ Faltan datos:", { cliente, mail, fecha, hora });
       return res.status(400).json({ error: "Faltan datos obligatorios" });
     }
 
