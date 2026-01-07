@@ -113,7 +113,7 @@ router.delete("/cancelar/:id", async (req, res) => {
   }
 });
 
-// 📌 PUT: Editar turno
+// 📌 PUT: Editar turno (solo admin)
 router.put("/:id", async (req, res) => {
   try {
     const { fecha } = req.body;
@@ -128,6 +128,70 @@ router.put("/:id", async (req, res) => {
       req.body.fecha = fechaStr;
     }
     
+    const turnoEditado = await Turno.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json({ data: turnoEditado });
+  } catch (err) {
+    console.error("Error editando turno:", err);
+    res.status(500).json({ error: "Error editando turno" });
+  }
+});
+
+// 📌 PUT: Editar turno por cliente (con validación de 6 horas)
+router.put("/editar/:id", async (req, res) => {
+  try {
+    const turno = await Turno.findById(req.params.id);
+    
+    if (!turno) {
+      return res.status(404).json({ error: "Turno no encontrado" });
+    }
+
+    // Obtener fecha y hora original del turno
+    const fechaTurnoOriginal = new Date(turno.fecha);
+    const [horaOriginal, minutoOriginal] = turno.hora.split(":").map(Number);
+    fechaTurnoOriginal.setHours(horaOriginal, minutoOriginal, 0, 0);
+
+    // Obtener fecha y hora actual del servidor
+    const ahora = new Date();
+
+    // Calcular diferencia en milisegundos
+    const diferenciaMs = fechaTurnoOriginal.getTime() - ahora.getTime();
+    const diferenciaHoras = diferenciaMs / (1000 * 60 * 60);
+
+    // Validar: no se puede editar si faltan 6 horas o menos
+    if (diferenciaHoras <= 6) {
+      return res.status(400).json({ 
+        error: `No se puede editar el turno. Debe editarse con más de 6 horas de anticipación. Faltan ${Math.round(diferenciaHoras * 10) / 10} horas.` 
+      });
+    }
+
+    const { fecha, hora } = req.body;
+
+    // Validar que no sea domingo si se cambia la fecha
+    if (fecha) {
+      const fechaStr = typeof fecha === "string" ? fecha : new Date(fecha).toISOString().split("T")[0];
+      const fechaDate = new Date(fechaStr + 'T00:00:00');
+      if (fechaDate.getDay() === 0) {
+        return res.status(400).json({ error: "Los domingos no están disponibles para turnos" });
+      }
+      req.body.fecha = fechaStr;
+    }
+
+    // Verificar que el nuevo turno no esté ocupado (si cambió fecha o hora)
+    if (fecha || hora) {
+      const fechaFinal = fecha ? (typeof fecha === "string" ? fecha : new Date(fecha).toISOString().split("T")[0]) : turno.fecha;
+      const horaFinal = hora || turno.hora;
+      
+      const existe = await Turno.findOne({ 
+        fecha: fechaFinal, 
+        hora: horaFinal,
+        _id: { $ne: req.params.id } // Excluir el turno actual
+      });
+      
+      if (existe) {
+        return res.status(400).json({ error: "Ese turno ya está ocupado" });
+      }
+    }
+
     const turnoEditado = await Turno.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json({ data: turnoEditado });
   } catch (err) {
