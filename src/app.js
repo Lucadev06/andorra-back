@@ -5,6 +5,7 @@ import cors from "cors";
 
 import turnosRoutes from "./routes/turnos.js";
 import diasNoDisponiblesRoutes from "./routes/diasNoDisponibles.js";
+import adminRoutes from "./routes/admin.js";
 
 
 dotenv.config();
@@ -28,6 +29,7 @@ mongoose
 
 app.use("/api/turnos", turnosRoutes);
 app.use("/api/dias-no-disponibles", diasNoDisponiblesRoutes);
+app.use("/api/admin", adminRoutes);
 
 
 export default app;
