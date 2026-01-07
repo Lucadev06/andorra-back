@@ -78,6 +78,13 @@ export const deleteDiaNoDisponible = async (req, res) => {
         dia.horarios = [];
       }
       dia.horarios = dia.horarios.filter((h) => h !== horario);
+      
+      // Si después de filtrar no quedan horarios bloqueados, eliminar el registro completo
+      if (dia.horarios.length === 0) {
+        await DiaNoDisponible.findByIdAndDelete(dia._id);
+        return res.json({ message: "Horario desbloqueado. Día completamente disponible." });
+      }
+      
       await dia.save();
       // Devolver el día actualizado
       return res.json(dia);
