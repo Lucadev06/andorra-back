@@ -2,7 +2,7 @@ import express from "express";
 const router = express.Router();
 
 // Contraseña de admin (en producción, usar variable de entorno)
-const ADMIN_PASSWORD = "1234";
+const ADMIN_PASSWORD = "Martelli121410";
 
 // POST: Verificar contraseña de admin
 router.post("/verify", (req, res) => {
