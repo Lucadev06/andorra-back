@@ -113,6 +113,18 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ error: "Ese horario no está habilitado para el día seleccionado" });
     }
 
+    const hoyUTC = new Date();
+    hoyUTC.setUTCHours(0, 0, 0, 0);
+
+    const turnosVigentesDelCliente = await Turno.countDocuments({
+      mail,
+      fecha: { $gte: hoyUTC },
+    });
+
+    if (turnosVigentesDelCliente >= 5) {
+      return res.status(409).json({ error: "Ya tenés 5 turnos reservados, no podés sacar otro." });
+    }
+
     const bloqueado = await estaHorarioBloqueado(fechaStr, hora);
     if (bloqueado) {
       return res.status(409).json({ error: "Ese horario está bloqueado y no se puede reservar" });
