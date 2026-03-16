@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const TurnoSchema = new mongoose.Schema({
   cliente: { type: String, required: true },
   mail: { type: String, required: true },
+  telefono: { type: String, default: "" },
   fecha: { type: Date, required: true },
   hora: { type: String, required: true },
   servicio: { type: String, required: true },
